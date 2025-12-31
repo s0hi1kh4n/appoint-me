@@ -1,4 +1,9 @@
 import { z } from "zod";
+import {
+  APPOINTMENT_STATUS,
+  APPOINTMENT_TYPE,
+} from "@/types/enums";
+
 
 export const UserFormValidation = z.object({
   name: z
@@ -76,31 +81,63 @@ export const PatientFormValidation = z.object({
     }),
 });
 
-export const CreateAppointmentSchema = z.object({
-  primaryPhysician: z.string().min(2, "Select at least one doctor"),
-  schedule: z.coerce.date(),
-  reason: z.string(),
-  note: z.string().optional(),
-  cancellationReason: z.string().optional(),
-});
+// export const CreateAppointmentSchema = z.object({
+//   primaryPhysician: z.string().min(2, "Select at least one doctor"),
+//   schedule: z.coerce.date(),
+//   reason: z.string().optional(),
+//   note: z.string().optional(),
 
-export const ScheduleAppointmentSchema = z.object({
-  primaryPhysician: z.string().min(2, "Select at least one doctor"),
+//   status: z.enum([
+//     APPOINTMENT_STATUS.PENDING,
+//     APPOINTMENT_STATUS.SCHEDULED,
+//     APPOINTMENT_STATUS.CANCELLED,
+//   ]),
+
+//   type: z.enum([
+//     APPOINTMENT_TYPE.CONSULTATION,
+//     APPOINTMENT_TYPE.FOLLOW_UP,
+//     APPOINTMENT_TYPE.EMERGENCY,
+//   ]),
+
+//   cancellationReason: z.string().optional(),
+// });
+
+// base
+const BaseAppointmentSchema = z.object({
+  primaryPhysician: z.string().min(2, "Select a doctor"),
   schedule: z.coerce.date(),
   reason: z.string().optional(),
   note: z.string().optional(),
-  cancellationReason: z.string().optional(),
 });
 
+// create
+export const CreateAppointmentSchema = BaseAppointmentSchema.extend({
+  status: z.literal(APPOINTMENT_STATUS.PENDING),
+  type: z.enum([
+    APPOINTMENT_TYPE.CONSULTATION,
+    APPOINTMENT_TYPE.FOLLOW_UP,
+    APPOINTMENT_TYPE.EMERGENCY,
+  ]),
+});
+
+// schedule 
+export const ScheduleAppointmentSchema = BaseAppointmentSchema.extend({
+  status: z.literal(APPOINTMENT_STATUS.SCHEDULED),
+});
+
+// cancel
 export const CancelAppointmentSchema = z.object({
-  primaryPhysician: z.string().min(2, "Select at least one doctor"),
-  schedule: z.coerce.date(),
-  reason: z.string().optional(),
-  note: z.string().optional(),
-  cancellationReason: z.string().optional(),
+  cancellationReason: z
+    .string()
+    .min(5, "Please provide a reason for cancellation"),
+
+  status: z.literal(APPOINTMENT_STATUS.CANCELLED),
 });
 
-export function getAppointmentSchema(type: string) {
+// switch
+export function getAppointmentSchema(
+  type: "create" | "schedule" | "cancel"
+) {
   switch (type) {
     case "create":
       return CreateAppointmentSchema;

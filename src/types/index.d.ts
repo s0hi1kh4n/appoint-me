@@ -1,12 +1,17 @@
-/* eslint-disable no-unused-vars */
 
+import type {
+  AppointmentStatus,
+  AppointmentType,
+} from "@/types/enums";
+
+/* eslint-disable no-unused-vars */
 declare type SearchParamProps = {
   params: { [key: string]: string };
   searchParams: { [key: string]: string | string[] | undefined };
 };
 
 declare type Gender = "male" | "female" | "other";
-declare type Status = "pending" | "scheduled" | "cancelled";
+declare type Status = AppointmentStatus;
 
 declare interface CreateUserParams {
   name: string;
@@ -40,12 +45,14 @@ declare interface RegisterUserParams extends CreateUserParams {
 
 declare type CreateAppointmentParams = {
   userID: string;
-  patient: string;
-  primaryPhysician: string;
-  reason: string | undefined;
-  schedule: Date;
-  status: Status;
-  note: string | undefined;
+  patientID: string;            
+  doctor: string;                 
+  appointmentDate: Date;        
+  appointmentTime?: string;
+  reason?: string;
+  notes?: string;
+  status?: AppointmentStatus;
+  type?: AppointmentType;
 };
 
 declare type UpdateAppointmentParams = {

@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { useState } from "react";
 import { Button } from "./ui/button";
-import { Appointment } from "../../types/appwrite.types";
+import { Appointment } from "../types/appwrite.types";
 import AppointmentForm from "./forms/AppointmentForm";
 
 const AppointmentModal = ({

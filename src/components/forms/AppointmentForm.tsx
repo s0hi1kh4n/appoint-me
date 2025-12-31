@@ -1,4 +1,11 @@
 "use client";
+
+import type { CreateAppointmentParams } from "@/types";
+import {
+  APPOINTMENT_STATUS,
+  APPOINTMENT_TYPE,
+} from "@/types/enums";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -20,10 +27,10 @@ import { SelectItem } from "../ui/select";
 import Image from "next/image";
 import {
   createAppointment,
-  updateAppointment,
+  // updateAppointment,
 } from "@/lib/actions/appointment.actions";
 import { toast } from "sonner";
-import { Appointment } from "../../../types/appwrite.types";
+import { Appointment } from "../../types/appwrite.types";
 type Props = {
   type: "create" | "cancel" | "schedule";
   userID: string;
@@ -69,30 +76,20 @@ const AppointmentForm: React.FC<Props> = ({
 
   async function onSubmit(values: z.infer<typeof AppointmentFormValidation>) {
     console.log("submittt");
-
-    let status;
-    switch (type) {
-      case "schedule":
-        status = "scheduled";
-        break;
-      case "cancel":
-        status = "cancelled";
-        break;
-      default:
-        status = "pending";
-        break;
-    }
     setLoading(true);
+
     try {
-      if (type === "create" && patientID) {
-        const appointmentData = {
-          userID,
-          patient: patientID,
-          primaryPhysician: values.primaryPhysician,
-          schedule: new Date(values.schedule),
-          reason: values.reason,
-          note: values.note,
-          status: status as Status,
+      if (type === "create") {
+        const appointmentData:CreateAppointmentParams  = {
+            patientID,                         
+            userID,                                 
+            doctor: values.primaryPhysician,
+            appointmentDate: values.schedule,
+            appointmentTime: values.schedule.toLocaleTimeString(),
+            reason: values.reason,
+            notes: values.note,
+            status: APPOINTMENT_STATUS.PENDING,
+            type: APPOINTMENT_TYPE.CONSULTATION,
         };
         const appointment = await createAppointment(appointmentData);
         if (appointment) {
@@ -102,32 +99,26 @@ const AppointmentForm: React.FC<Props> = ({
             `/patients/${userID}/new-appointment/success?appointmentId=${appointment.$id}`
           );
         }
-      } else {
-        const appointmentToUpdate = {
-          userID,
-          appointmentId: appointment?.$id!,
-          appointment: {
-            primaryPhysician: values?.primaryPhysician,
-            schedule: new Date(values?.schedule),
-            status: status as Status,
-            cancellationReason: values?.cancellationReason,
-          },
-          type,
-        };
-
-        const updatedAppointment = await updateAppointment(appointmentToUpdate);
-        if (updatedAppointment) {
-          setOpen && setOpen(false);
-          form.reset();
-        }
+        return;
       }
-    } catch (error) {
-      console.log("Error during appointment creation: ", error);
-      alert("Failed to create user. Please try again.");
-    } finally {
-      setLoading(false);
+      
+      if (type === "schedule") {
+      // later: update appointment
+      return;
     }
+
+    if (type === "cancel") {
+      // later: cancel appointment
+      return;
+    }
+  } catch (error) {
+    console.error(error);
+    alert("Something went wrong");
+  } finally {
+    setLoading(false);
   }
+
+}
 
   return (
     <div>
